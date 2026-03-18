@@ -12,8 +12,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 
 /**
  *
@@ -21,19 +19,11 @@ import javax.swing.SwingConstants;
  */
 public class main extends javax.swing.JFrame {
     
-    private enum State { START, ITEMS, PAYMENT, PROCESSING, FINISHED }
-    private State currentState = State.START;
-    private JLabel statusLabel = new JLabel("READY");
-    private String selectedPayment = "NONE";
-    private double currentSubtotal = 0;
-    private final double VAT_RATE = 0.12;
-
-    private JLabel statusDisplay = new JLabel("READY");
-
     private DefaultListModel<Product> inventoryModel = new DefaultListModel<>();
     private DefaultListModel<Product> selectedModel = new DefaultListModel<>();
     private JList<Product> inventoryList = new JList<>(inventoryModel);
     private JList<Product> selectedList = new JList<>(selectedModel);
+    private String selectedPayment = "NONE"; // Tracks current payment state
 
     /**
      * Creates new form main
@@ -56,7 +46,7 @@ public class main extends javax.swing.JFrame {
         consoleSection = new javax.swing.JTextField();
         inventoryProducts = new javax.swing.JScrollPane();
         selectedProducts = new javax.swing.JScrollPane();
-        rightContainer = new javax.swing.JPanel(new GridLayout (4, 3));
+        numpad = new javax.swing.JPanel(new GridLayout (4, 3));
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Cash Register");
@@ -87,8 +77,16 @@ public class main extends javax.swing.JFrame {
         selectedProducts.setBackground(new java.awt.Color(20, 18, 33));
         selectedProducts.setForeground(new java.awt.Color(255, 255, 255));
 
-        rightContainer.setBackground(new java.awt.Color(20, 18, 33));
-        rightContainer.setLayout(new java.awt.BorderLayout());
+        javax.swing.GroupLayout numpadLayout = new javax.swing.GroupLayout(numpad);
+        numpad.setLayout(numpadLayout);
+        numpadLayout.setHorizontalGroup(
+            numpadLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 240, Short.MAX_VALUE)
+        );
+        numpadLayout.setVerticalGroup(
+            numpadLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 215, Short.MAX_VALUE)
+        );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -96,14 +94,14 @@ public class main extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(34, 34, 34)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(consoleSection, javax.swing.GroupLayout.PREFERRED_SIZE, 925, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(inventoryProducts, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(selectedProducts, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(rightContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(numpad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(41, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -112,10 +110,11 @@ public class main extends javax.swing.JFrame {
                 .addGap(23, 23, 23)
                 .addComponent(consoleSection, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(inventoryProducts, javax.swing.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
-                    .addComponent(selectedProducts)
-                    .addComponent(rightContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(inventoryProducts, javax.swing.GroupLayout.PREFERRED_SIZE, 285, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(numpad, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(selectedProducts, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 285, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(129, Short.MAX_VALUE))
         );
 
@@ -143,11 +142,12 @@ public class main extends javax.swing.JFrame {
     private void setupApp() {
         inventoryProducts.setViewportView(inventoryList);
         selectedProducts.setViewportView(selectedList);
+
         inventoryList.setBackground(new java.awt.Color(20, 18, 33));
         inventoryList.setForeground(Color.WHITE);
         selectedList.setBackground(new java.awt.Color(20, 18, 33));
         selectedList.setForeground(new java.awt.Color(253, 119, 215));
-
+        
         inventoryModel.clear();
         for (Product p : Product.getInitialInventory()) {
             inventoryModel.addElement(p);
@@ -159,26 +159,23 @@ public class main extends javax.swing.JFrame {
                 if (p != null) {
                     selectedModel.addElement(p);
                     updateSubtotal();
-                    statusLabel.setText("ITEM ADDED");
                     inventoryList.clearSelection();
                 }
             }
         });
-        
-        JPanel numpadGrid = new JPanel(new java.awt.GridLayout(4, 3, 5, 5));
-        numpadGrid.setBackground(new java.awt.Color(20, 18, 33));
 
-        numpadGrid.setLayout(new java.awt.GridLayout(4, 3, 5, 5));
-        rightContainer.setBackground(new java.awt.Color(20, 18, 33));
+        numpad.setLayout(new java.awt.GridLayout(4, 3, 5, 5));
+        numpad.setPreferredSize(new java.awt.Dimension(240, 300)); 
+        numpad.setBackground(new java.awt.Color(20, 18, 33));
+        numpad.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
         Color darkBg = new java.awt.Color(25, 23, 40);
 
         Action numberAction = new javax.swing.AbstractAction() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                if (consoleSection.getText().startsWith("TOTAL") || consoleSection.getText().equals("CASH REGISTER") || consoleSection.getText().startsWith("CHANGE")) {
-                    consoleSection.setText(""); 
-                }
-                consoleSection.setText(consoleSection.getText() + e.getActionCommand());
+                String val = e.getActionCommand();
+                if (consoleSection.getText().equals("CASH REGISTER")) consoleSection.setText("");
+                consoleSection.setText(consoleSection.getText() + val);
             }
         };
 
@@ -188,127 +185,94 @@ public class main extends javax.swing.JFrame {
             btn.setActionCommand(val);
             btn.addActionListener(numberAction);
             styleButton(btn, darkBg); 
-            numpadGrid.add(btn);
-            bindKey("num"+val, java.awt.event.KeyEvent.VK_NUMPAD0+i, numberAction);
+            numpad.add(btn);
+            bindKey("num" + val, java.awt.event.KeyEvent.VK_NUMPAD0 + i, numberAction);
+            bindKey("top" + val, java.awt.event.KeyEvent.VK_0 + i, numberAction); 
         }
 
         JButton btnBack = new JButton("X");
-        btnBack.addActionListener(e -> {
-            String txt = consoleSection.getText();
-            if (txt.length() > 0) consoleSection.setText(txt.substring(0, txt.length()-1));
-        });
+        Action backAction = new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                String txt = consoleSection.getText();
+                if (txt.length() > 0 && !txt.equals("CASH REGISTER")) {
+                    consoleSection.setText(txt.substring(0, txt.length() - 1));
+                }
+            }
+        };
+        btnBack.addActionListener(backAction);
         styleButton(btnBack, darkBg);
         btnBack.setForeground(Color.RED);
-        numpadGrid.add(btnBack); 
+        numpad.add(btnBack);
+        bindKey("back", java.awt.event.KeyEvent.VK_BACK_SPACE, backAction);
 
         JButton btn0 = new JButton("0");
         btn0.setActionCommand("0");
         btn0.addActionListener(numberAction);
         styleButton(btn0, darkBg);
-        numpadGrid.add(btn0);
+        numpad.add(btn0);
+        bindKey("num0", java.awt.event.KeyEvent.VK_NUMPAD0, numberAction);
+        bindKey("top0", java.awt.event.KeyEvent.VK_0, numberAction);
 
         JButton btnEnter = new JButton("OK");
-        btnEnter.addActionListener(e -> handleTransaction());
+        Action enterAction = new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                System.out.println("Processing: " + consoleSection.getText());
+                selectedModel.clear(); 
+                consoleSection.setText("CASH REGISTER"); 
+            }
+        };
+        btnEnter.addActionListener(enterAction);
         styleButton(btnEnter, darkBg);
         btnEnter.setForeground(Color.GREEN);
-        numpadGrid.add(btnEnter); 
+        numpad.add(btnEnter);
+        bindKey("enter", java.awt.event.KeyEvent.VK_ENTER, enterAction);
 
-        JPanel payPanel = new JPanel(new java.awt.GridLayout(1, 2, 5, 5));
-        payPanel.setBackground(new java.awt.Color(20, 18, 33));
-        JButton cashBtn = new JButton("CASH");
-        JButton cardBtn = new JButton("CARD");
-        styleButton(cashBtn, darkBg);
-        styleButton(cardBtn, darkBg);
-
-        java.awt.event.ActionListener payL = ex -> {
-            selectedPayment = ex.getActionCommand();
-            statusLabel.setText(selectedPayment + " SELECTED");
-            if(selectedPayment.equals("CASH")) consoleSection.setText(""); 
-        };
-        cashBtn.addActionListener(payL);
-        cardBtn.addActionListener(payL);
-        payPanel.add(cashBtn);
-        payPanel.add(cardBtn);
-
-        JPanel statusConsole = new JPanel(new java.awt.GridLayout(3, 1, 5, 5));
-        statusConsole.setBackground(new java.awt.Color(30, 29, 47));
-        statusConsole.setPreferredSize(new java.awt.Dimension(180, 300)); 
-        statusConsole.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "STATUS", 0, 0, null, new java.awt.Color(253, 119, 215)));
-
-        statusLabel.setForeground(Color.WHITE);
-        statusLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        numpad.revalidate();
         
-        statusConsole.add(statusLabel);
+        //to remove item from selected
+        selectedList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int index = selectedList.getSelectedIndex();
 
-       JPanel rightGroup = new JPanel(new java.awt.BorderLayout(10, 10));
-       rightGroup.setBackground(new java.awt.Color(20, 18, 33));
-       rightGroup.setPreferredSize(new java.awt.Dimension(150, 350)); 
-       rightGroup.add(numpadGrid, java.awt.BorderLayout.CENTER); 
-       rightGroup.add(payPanel, java.awt.BorderLayout.SOUTH);
+                if (index != -1) {
+                    Product p = selectedModel.getElementAt(index);
+                    int response = javax.swing.JOptionPane.showConfirmDialog(
+                        this, 
+                        "Remove " + p.toString() + " from cart?", 
+                        "Confirm Removal", 
+                        javax.swing.JOptionPane.YES_NO_OPTION,
+                        javax.swing.JOptionPane.QUESTION_MESSAGE
+                    );
 
+                    if (response == javax.swing.JOptionPane.YES_OPTION) {
+                        selectedModel.remove(index);
+                        updateSubtotal();
+                    }
 
-       JPanel finalRight = new JPanel(new java.awt.BorderLayout(10, 10));
-       finalRight.setBackground(new java.awt.Color(20, 18, 33));
-       finalRight.add(rightGroup, java.awt.BorderLayout.CENTER);
-       finalRight.add(statusConsole, java.awt.BorderLayout.EAST);
-
-
-       rightContainer.setLayout(new java.awt.BorderLayout());
-       rightContainer.removeAll();
-       rightContainer.add(finalRight, java.awt.BorderLayout.CENTER);
-       rightContainer.revalidate();
-       rightContainer.repaint();
+                    selectedList.clearSelection();
+                }
+            }
+        });
 
     }
 
 
     private void updateSubtotal() {
-        currentSubtotal = 0;
+        double total = 0;
         for (int i = 0; i < selectedModel.size(); i++) {
-            currentSubtotal += selectedModel.getElementAt(i).getPrice();
+            total += selectedModel.getElementAt(i).getPrice();
         }
-        double totalWithVat = currentSubtotal * (1 + VAT_RATE);
-        consoleSection.setText(String.format("TOTAL w/ VAT: ₱%.2f", totalWithVat));
-    }
-
-    private void handleTransaction() {
-        if (selectedPayment.equals("NONE")) {
-            statusLabel.setText("SELECT PAYMENT!");
-            return;
-        }
-
-        double totalDue = currentSubtotal * (1 + VAT_RATE);
-
-        if (selectedPayment.equals("CASH")) {
-            try {
-                double paid = Double.parseDouble(consoleSection.getText());
-                if (paid < totalDue) {
-                    statusLabel.setText("LACKING CASH!");
-                    return;
-                }
-                double change = paid - totalDue;
-                consoleSection.setText(String.format("CHANGE: ₱%.2f", change));
-            } catch (Exception e) { statusLabel.setText("INVALID CASH"); return; }
-        }
-
-        statusLabel.setText("PROCESSING...");
-
-        javax.swing.Timer timer = new javax.swing.Timer(3000, e -> {
-            selectedModel.clear();
-            consoleSection.setText("CASH REGISTER");
-            statusLabel.setText("READY");
-            selectedPayment = "NONE";
-        });
-        timer.setRepeats(false);
-        timer.start();
+        consoleSection.setText(String.format("$%.2f", total));
     }
 
 
     //keyboard binder
     private void bindKey(String name, int keyCode, Action action) {
-        rightContainer.getInputMap(javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW)
+        numpad.getInputMap(javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW)
               .put(javax.swing.KeyStroke.getKeyStroke(keyCode, 0), name);
-        rightContainer.getActionMap().put(name, action);
+        numpad.getActionMap().put(name, action);
     }
 
     /**
@@ -363,7 +327,7 @@ public class main extends javax.swing.JFrame {
     private javax.swing.JTextField consoleSection;
     private javax.swing.JScrollPane inventoryProducts;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel rightContainer;
+    private javax.swing.JPanel numpad;
     private javax.swing.JScrollPane selectedProducts;
     // End of variables declaration//GEN-END:variables
 }
