@@ -264,7 +264,7 @@ public class main extends javax.swing.JFrame {
         for (int i = 0; i < selectedModel.size(); i++) {
             total += selectedModel.getElementAt(i).getPrice();
         }
-        consoleSection.setText(String.format("$%.2f", total));
+        consoleSection.setText(String.format("₱%.2f", total));
     }
 
 
