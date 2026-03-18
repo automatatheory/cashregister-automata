@@ -4,17 +4,33 @@
  */
 package com.mycompany.cashregister;
 
+import java.awt.Color;
+import java.awt.GridLayout;
+import java.awt.event.ActionListener;
+import javax.swing.Action;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JList;
+
 /**
  *
  * @author Dana
  */
 public class main extends javax.swing.JFrame {
+    
+    private DefaultListModel<Product> inventoryModel = new DefaultListModel<>();
+    private DefaultListModel<Product> selectedModel = new DefaultListModel<>();
+    private JList<Product> inventoryList = new JList<>(inventoryModel);
+    private JList<Product> selectedList = new JList<>(selectedModel);
+    private String selectedPayment = "NONE"; // Tracks current payment state
 
     /**
      * Creates new form main
      */
     public main() {
         initComponents();
+        setupApp();
     }
 
     /**
@@ -26,21 +42,238 @@ public class main extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPanel1 = new javax.swing.JPanel();
+        consoleSection = new javax.swing.JTextField();
+        inventoryProducts = new javax.swing.JScrollPane();
+        selectedProducts = new javax.swing.JScrollPane();
+        numpad = new javax.swing.JPanel(new GridLayout (4, 3));
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Cash Register");
+        setLocationByPlatform(true);
+        setPreferredSize(new java.awt.Dimension(1000, 600));
+        setResizable(false);
+
+        jPanel1.setBackground(new java.awt.Color(20, 18, 33));
+        jPanel1.setFont(new java.awt.Font("Roboto Mono", 0, 12)); // NOI18N
+        jPanel1.setPreferredSize(new java.awt.Dimension(1000, 700));
+
+        consoleSection.setEditable(false);
+        consoleSection.setBackground(new java.awt.Color(20, 18, 33));
+        consoleSection.setFont(new java.awt.Font("Roboto Mono", 1, 48)); // NOI18N
+        consoleSection.setForeground(new java.awt.Color(253, 119, 215));
+        consoleSection.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        consoleSection.setText("CASH REGISTER");
+        consoleSection.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(30, 29, 47), 5, true));
+        consoleSection.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                consoleSectionActionPerformed(evt);
+            }
+        });
+
+        inventoryProducts.setBackground(new java.awt.Color(20, 18, 33));
+        inventoryProducts.setForeground(new java.awt.Color(255, 255, 255));
+
+        selectedProducts.setBackground(new java.awt.Color(20, 18, 33));
+        selectedProducts.setForeground(new java.awt.Color(255, 255, 255));
+
+        javax.swing.GroupLayout numpadLayout = new javax.swing.GroupLayout(numpad);
+        numpad.setLayout(numpadLayout);
+        numpadLayout.setHorizontalGroup(
+            numpadLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 240, Short.MAX_VALUE)
+        );
+        numpadLayout.setVerticalGroup(
+            numpadLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 215, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(34, 34, 34)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(consoleSection, javax.swing.GroupLayout.PREFERRED_SIZE, 925, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(inventoryProducts, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(selectedProducts, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(numpad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(41, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(23, 23, 23)
+                .addComponent(consoleSection, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(inventoryProducts, javax.swing.GroupLayout.PREFERRED_SIZE, 285, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(numpad, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(selectedProducts, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 285, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(129, Short.MAX_VALUE))
+        );
+
+        consoleSection.getAccessibleContext().setAccessibleName("console");
+        inventoryProducts.getAccessibleContext().setAccessibleName("inventory");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void consoleSectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_consoleSectionActionPerformed
+
+    }//GEN-LAST:event_consoleSectionActionPerformed
+
+    private void setupApp() {
+        inventoryProducts.setViewportView(inventoryList);
+        selectedProducts.setViewportView(selectedList);
+
+        inventoryList.setBackground(new java.awt.Color(20, 18, 33));
+        inventoryList.setForeground(Color.WHITE);
+        selectedList.setBackground(new java.awt.Color(20, 18, 33));
+        selectedList.setForeground(new java.awt.Color(253, 119, 215));
+        
+        inventoryModel.clear();
+        for (Product p : Product.getInitialInventory()) {
+            inventoryModel.addElement(p);
+        }
+
+        inventoryList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                Product p = inventoryList.getSelectedValue();
+                if (p != null) {
+                    selectedModel.addElement(p);
+                    updateSubtotal();
+                    inventoryList.clearSelection();
+                }
+            }
+        });
+
+        numpad.setLayout(new java.awt.GridLayout(4, 3, 5, 5));
+        numpad.setPreferredSize(new java.awt.Dimension(240, 300)); 
+        numpad.setBackground(new java.awt.Color(20, 18, 33));
+        numpad.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        Color darkBg = new java.awt.Color(25, 23, 40);
+
+        Action numberAction = new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                String val = e.getActionCommand();
+                if (consoleSection.getText().equals("CASH REGISTER")) consoleSection.setText("");
+                consoleSection.setText(consoleSection.getText() + val);
+            }
+        };
+
+        for (int i = 1; i <= 9; i++) {
+            String val = String.valueOf(i);
+            JButton btn = new JButton(val);
+            btn.setActionCommand(val);
+            btn.addActionListener(numberAction);
+            styleButton(btn, darkBg); 
+            numpad.add(btn);
+            bindKey("num" + val, java.awt.event.KeyEvent.VK_NUMPAD0 + i, numberAction);
+            bindKey("top" + val, java.awt.event.KeyEvent.VK_0 + i, numberAction); 
+        }
+
+        JButton btnBack = new JButton("X");
+        Action backAction = new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                String txt = consoleSection.getText();
+                if (txt.length() > 0 && !txt.equals("CASH REGISTER")) {
+                    consoleSection.setText(txt.substring(0, txt.length() - 1));
+                }
+            }
+        };
+        btnBack.addActionListener(backAction);
+        styleButton(btnBack, darkBg);
+        btnBack.setForeground(Color.RED);
+        numpad.add(btnBack);
+        bindKey("back", java.awt.event.KeyEvent.VK_BACK_SPACE, backAction);
+
+        JButton btn0 = new JButton("0");
+        btn0.setActionCommand("0");
+        btn0.addActionListener(numberAction);
+        styleButton(btn0, darkBg);
+        numpad.add(btn0);
+        bindKey("num0", java.awt.event.KeyEvent.VK_NUMPAD0, numberAction);
+        bindKey("top0", java.awt.event.KeyEvent.VK_0, numberAction);
+
+        JButton btnEnter = new JButton("OK");
+        Action enterAction = new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                System.out.println("Processing: " + consoleSection.getText());
+                selectedModel.clear(); 
+                consoleSection.setText("CASH REGISTER"); 
+            }
+        };
+        btnEnter.addActionListener(enterAction);
+        styleButton(btnEnter, darkBg);
+        btnEnter.setForeground(Color.GREEN);
+        numpad.add(btnEnter);
+        bindKey("enter", java.awt.event.KeyEvent.VK_ENTER, enterAction);
+
+        numpad.revalidate();
+        
+        //to remove item from selected
+        selectedList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int index = selectedList.getSelectedIndex();
+
+                if (index != -1) {
+                    Product p = selectedModel.getElementAt(index);
+                    int response = javax.swing.JOptionPane.showConfirmDialog(
+                        this, 
+                        "Remove " + p.toString() + " from cart?", 
+                        "Confirm Removal", 
+                        javax.swing.JOptionPane.YES_NO_OPTION,
+                        javax.swing.JOptionPane.QUESTION_MESSAGE
+                    );
+
+                    if (response == javax.swing.JOptionPane.YES_OPTION) {
+                        selectedModel.remove(index);
+                        updateSubtotal();
+                    }
+
+                    selectedList.clearSelection();
+                }
+            }
+        });
+
+    }
+
+
+    private void updateSubtotal() {
+        double total = 0;
+        for (int i = 0; i < selectedModel.size(); i++) {
+            total += selectedModel.getElementAt(i).getPrice();
+        }
+        consoleSection.setText(String.format("$%.2f", total));
+    }
+
+
+    //keyboard binder
+    private void bindKey(String name, int keyCode, Action action) {
+        numpad.getInputMap(javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW)
+              .put(javax.swing.KeyStroke.getKeyStroke(keyCode, 0), name);
+        numpad.getActionMap().put(name, action);
+    }
 
     /**
      * @param args the command line arguments
@@ -76,7 +309,25 @@ public class main extends javax.swing.JFrame {
             }
         });
     }
+    
+    private void styleButton(JButton btn, Color bgColor) {
+    btn.setFont(new java.awt.Font("Roboto Mono", java.awt.Font.BOLD, 20));
+    btn.setBackground(bgColor);
+    btn.setForeground(new java.awt.Color(253, 119, 215)); // Your Pink Accent
+    btn.setFocusPainted(false);
+    btn.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(30, 29, 47), 2));
+    btn.setContentAreaFilled(false);
+    btn.setOpaque(true);         
+    btn.setFocusPainted(false);  
+   
+}
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField consoleSection;
+    private javax.swing.JScrollPane inventoryProducts;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel numpad;
+    private javax.swing.JScrollPane selectedProducts;
     // End of variables declaration//GEN-END:variables
 }
