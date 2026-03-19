@@ -4,6 +4,7 @@
  */
 package com.mycompany.cashregister;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
@@ -14,6 +15,12 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+
 
 /**
  *
@@ -27,6 +34,7 @@ public class main extends javax.swing.JFrame {
     private String selectedPayment = "NONE";
     private double currentSubtotal = 0;
     private final double VAT_RATE = 0.12;
+    private JLabel subtotalLabel = new JLabel("₱0.00");
 
     private JLabel statusDisplay = new JLabel("READY");
 
@@ -41,6 +49,12 @@ public class main extends javax.swing.JFrame {
     public main() {
         initComponents();
         setupApp();
+        // test if connector successfully loads
+         if (DBConnection.getConnection() != null) {
+        System.out.println("Database Connected Successfully!");
+    } else {
+        System.out.println("Database Connection Failed!");
+    }
     }
 
     /**
@@ -149,18 +163,79 @@ public class main extends javax.swing.JFrame {
         selectedList.setForeground(new java.awt.Color(253, 119, 215));
 
         inventoryModel.clear();
-        for (Product p : Product.getInitialInventory()) {
-            inventoryModel.addElement(p);
+        
+        String query = "SELECT * FROM products"; 
+
+        try (Connection conn = DBConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+
+            while (rs.next()) {
+                Product p = new Product(
+                    rs.getInt("product_id"),
+                    rs.getString("product_name"),
+                    rs.getDouble("unit_price")
+                );
+                p.setQuantity(-1); 
+                inventoryModel.addElement(p);
+            }
+        } catch (Exception e) {
+            System.out.println("Error loading products: " + e.getMessage());
         }
 
         inventoryList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 Product p = inventoryList.getSelectedValue();
                 if (p != null) {
-                    selectedModel.addElement(p);
+                boolean found = false;
+                for (int i = 0; i < selectedModel.size(); i++) {
+                    Product alreadyInList = selectedModel.getElementAt(i);
+                    if (alreadyInList.getId() == p.getId()) {
+                        // Increment quantity
+                        alreadyInList.setQuantity(alreadyInList.getQuantity() + 1);
+
+                        // Refresh the display in the JList
+                        selectedModel.setElementAt(alreadyInList, i); 
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    // Create a new instance so quantity changes don't affect the inventory list
+                    Product newEntry = new Product(p.getId(), p.getName(), p.getPrice());
+                    selectedModel.addElement(newEntry);
+                }
+
+                updateSubtotal();
+                statusLabel.setText("ITEM ADDED");
+                inventoryList.clearSelection();
+                    /*selectedModel.addElement(p);
                     updateSubtotal();
                     statusLabel.setText("ITEM ADDED");
-                    inventoryList.clearSelection();
+                    inventoryList.clearSelection();*/
+                }
+            }
+        });
+        
+        // code to delete selected product
+        selectedList.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                int index = selectedList.locationToIndex(e.getPoint());
+
+                if (index != -1) {
+                    Product p = selectedModel.getElementAt(index);
+
+                   
+                    int cellWidth = selectedList.getCellBounds(index, index).width;
+
+                    if (e.getX() > cellWidth - 30) { 
+                        selectedModel.remove(index);
+
+                        updateSubtotal();
+                        statusLabel.setText("ITEM REMOVED");
+                    }
                 }
             }
         });
@@ -230,15 +305,77 @@ public class main extends javax.swing.JFrame {
         payPanel.add(cashBtn);
         payPanel.add(cardBtn);
 
-        JPanel statusConsole = new JPanel(new java.awt.GridLayout(3, 1, 5, 5));
+        JPanel thirdSection = new JPanel(new java.awt.BorderLayout(5, 8));
+        thirdSection.setBackground(new java.awt.Color(20, 18, 33));
+        
+        JPanel topPanel = new JPanel(new GridLayout(2, 1, 5, 8));
+        topPanel.setBackground(new java.awt.Color(20, 18, 33));
+        
+        JPanel statusConsole = new JPanel();
         statusConsole.setBackground(new java.awt.Color(30, 29, 47));
-        statusConsole.setPreferredSize(new java.awt.Dimension(180, 300)); 
+        statusConsole.setPreferredSize(new java.awt.Dimension(180, 100)); 
         statusConsole.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "STATUS", 0, 0, null, new java.awt.Color(253, 119, 215)));
 
         statusLabel.setForeground(Color.WHITE);
         statusLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        
+       
         statusConsole.add(statusLabel);
+        
+        JPanel subtotalConsole = new JPanel();
+        subtotalConsole.setBackground(new java.awt.Color(30, 29, 47));
+        subtotalConsole.setPreferredSize(new java.awt.Dimension(180, 100)); 
+        subtotalConsole.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "SUBTOTAL w/ VAT", 0, 0, null, new java.awt.Color(253, 119, 215)));
+        
+        
+        subtotalLabel.setForeground(Color.WHITE);
+        subtotalLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        subtotalLabel.setVerticalAlignment(SwingConstants.CENTER);
+        subtotalLabel.setFont(new java.awt.Font("Roboto Mono", java.awt.Font.BOLD, 14));
+        
+        subtotalConsole.add(subtotalLabel);
+        
+        topPanel.add(statusConsole);
+        topPanel.add(subtotalConsole);
+        
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new javax.swing.BoxLayout(buttonPanel, javax.swing.BoxLayout.Y_AXIS));
+        buttonPanel.setBackground(new java.awt.Color(20, 18, 33));
+
+        JButton receiptBtn = new JButton("RECEIPT");
+        JButton recordsBtn = new JButton("RECORDS");
+        JButton clearBtn = new JButton("CLEAR");
+        JButton exitBtn = new JButton("EXIT");
+        styleButton(receiptBtn, darkBg);
+        styleButton(recordsBtn, darkBg);
+        styleButton(clearBtn, darkBg);
+        styleButton(exitBtn, darkBg);
+        receiptBtn.setMaximumSize(new java.awt.Dimension(180, 35));
+        recordsBtn.setMaximumSize(new java.awt.Dimension(180, 35));
+        clearBtn.setMaximumSize(new java.awt.Dimension(180, 35));
+        exitBtn.setMaximumSize(new java.awt.Dimension(180, 35));
+        
+        buttonPanel.add(receiptBtn);
+        buttonPanel.add(javax.swing.Box.createVerticalStrut(8));
+        buttonPanel.add(recordsBtn);
+        buttonPanel.add(javax.swing.Box.createVerticalStrut(8));
+        buttonPanel.add(clearBtn);
+        buttonPanel.add(javax.swing.Box.createVerticalStrut(8));
+        buttonPanel.add(exitBtn);
+        
+        // logic for clear button
+        clearBtn.addActionListener(e -> {
+            selectedModel.clear();
+            updateSubtotal();
+            statusLabel.setText("LIST CLEARED");
+        });
+        
+        // for exit button
+        exitBtn.addActionListener(e -> {
+            System.exit(0);
+        });
+        
+        thirdSection.add(topPanel, BorderLayout.NORTH);
+        thirdSection.add(buttonPanel, BorderLayout.SOUTH);
 
        JPanel rightGroup = new JPanel(new java.awt.BorderLayout(10, 10));
        rightGroup.setBackground(new java.awt.Color(20, 18, 33));
@@ -250,7 +387,7 @@ public class main extends javax.swing.JFrame {
        JPanel finalRight = new JPanel(new java.awt.BorderLayout(10, 10));
        finalRight.setBackground(new java.awt.Color(20, 18, 33));
        finalRight.add(rightGroup, java.awt.BorderLayout.CENTER);
-       finalRight.add(statusConsole, java.awt.BorderLayout.EAST);
+       finalRight.add(thirdSection, java.awt.BorderLayout.EAST);
 
 
        rightContainer.setLayout(new java.awt.BorderLayout());
@@ -265,10 +402,12 @@ public class main extends javax.swing.JFrame {
     private void updateSubtotal() {
         currentSubtotal = 0;
         for (int i = 0; i < selectedModel.size(); i++) {
-            currentSubtotal += selectedModel.getElementAt(i).getPrice();
+            Product p = selectedModel.getElementAt(i);
+            currentSubtotal += (p.getPrice() * p.getQuantity());
         }
         double totalWithVat = currentSubtotal * (1 + VAT_RATE);
-        consoleSection.setText(String.format("TOTAL w/ VAT: ₱%.2f", totalWithVat));
+        consoleSection.setText(String.format("TOTAL: ₱%.2f", currentSubtotal));
+        subtotalLabel.setText(String.format("₱%.2f", totalWithVat));
     }
 
     private void handleTransaction() {
