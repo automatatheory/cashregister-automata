@@ -26,7 +26,7 @@ public class ReceiptFrame extends javax.swing.JFrame {
     /**
      * Creates new form ReceiptFrame
      */
-    public ReceiptFrame(DefaultListModel<Product> selectedModel, double subTotal, double vatRate) {
+    public ReceiptFrame(DefaultListModel<Product> selectedModel, double subTotal, double vatRate, String paymentMethod, double amountPaid, double change) {
         initComponents();
         setTitle("Receipt");
         setSize(400,600);
@@ -80,13 +80,32 @@ public class ReceiptFrame extends javax.swing.JFrame {
             double totalWithVat = subTotal * (1 + vatRate);
             doc.insertString(doc.getLength(), String.format("%-20s %18s\n", 
                 "TOTAL:", "₱" + String.format("%.2f", totalWithVat)), boldStyle);
-
+            doc.insertString(doc.getLength(), "\n", boldStyle);
+            
+            doc.insertString(doc.getLength(), String.format("%-20s %18s\n", 
+                "PAYMENT METHOD:", paymentMethod), boldStyle);
+            
+            if (paymentMethod.equals("CASH")) {
+                doc.insertString(doc.getLength(), String.format("%-20s %18s\n",
+                    "AMOUNT PAID:", "₱" + String.format("%.2f", amountPaid)), normalStyle);
+                doc.insertString(doc.getLength(), String.format("%-20s %18s\n",
+                    "CHANGE:", "₱" + String.format("%.2f", change)), boldStyle);
+            }
         } catch (BadLocationException e) {
             e.printStackTrace();
         }
 
         getContentPane().add(receiptPane);
-       
+        
+        JButton confirmBtn = new JButton("CONFIRM");
+        confirmBtn.setBackground(Color.decode("#1a1a2e"));
+        confirmBtn.setForeground(Color.PINK);
+        confirmBtn.setFont(new Font("Roboto Mono", Font.BOLD, 14));
+        confirmBtn.setBounds(150, 510, 100, 40);
+        confirmBtn.addActionListener(e -> {
+            dispose();
+        });
+        getContentPane().add(confirmBtn);
     }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -144,7 +163,7 @@ public class ReceiptFrame extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new ReceiptFrame(new javax.swing.DefaultListModel<>(), 0.0, 0.0).setVisible(true);
+                new ReceiptFrame(new javax.swing.DefaultListModel<>(), 0.0, 0.0, "CASH", 0.0, 0.0).setVisible(true);
             }
         });
     }

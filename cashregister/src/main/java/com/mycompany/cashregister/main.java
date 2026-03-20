@@ -36,6 +36,10 @@ public class main extends javax.swing.JFrame {
     private String selectedPayment = "NONE";
     private double currentSubtotal = 0;
     private final double VAT_RATE = 0.12;
+    private boolean transactionComplete = false;
+    private double paid = 0.0;
+    private double change = 0.0;
+    
     private JLabel subtotalLabel = new JLabel("₱0.00");
 
     private JLabel statusDisplay = new JLabel("READY");
@@ -365,7 +369,11 @@ public class main extends javax.swing.JFrame {
         
         // for receipt button
         receiptBtn.addActionListener(e -> {
-           new ReceiptFrame(selectedModel, currentSubtotal, VAT_RATE).setVisible(true);
+            if (transactionComplete) {
+               new ReceiptFrame(selectedModel, currentSubtotal, VAT_RATE, selectedPayment, paid, change).setVisible(true);
+            } else {
+                statusLabel.setText("NO TRANSACTION");
+            }
         });
         
         // for records button
@@ -375,9 +383,13 @@ public class main extends javax.swing.JFrame {
         
         // logic for clear button
         clearBtn.addActionListener(e -> {
-            selectedModel.clear();
-            updateSubtotal();
-            statusLabel.setText("LIST CLEARED");
+            if (transactionComplete) {
+                resetRegister();
+            } else {
+                selectedModel.clear();
+                updateSubtotal();
+                statusLabel.setText("LIST CLEARED");
+            }
         });
         
         // for exit button
@@ -409,6 +421,14 @@ public class main extends javax.swing.JFrame {
 
     }
 
+    private void resetRegister() {
+        selectedModel.clear();
+        consoleSection.setText("CASH REGISTER");
+        statusLabel.setText("READY");
+        selectedPayment = "NONE";
+        transactionComplete = false;
+        updateSubtotal();
+    }
 
     private void updateSubtotal() {
         currentSubtotal = 0;
@@ -431,28 +451,26 @@ public class main extends javax.swing.JFrame {
 
         if (selectedPayment.equals("CASH")) {
             try {
-                double paid = Double.parseDouble(consoleSection.getText());
+                paid = Double.parseDouble(consoleSection.getText());
                 if (paid < totalDue) {
                     statusLabel.setText("LACKING CASH!");
                     return;
                 }
-                double change = paid - totalDue;
+                change = paid - totalDue;
                 consoleSection.setText(String.format("CHANGE: ₱%.2f", change));
             } catch (Exception e) { statusLabel.setText("INVALID CASH"); return; }
         }
-
-        statusLabel.setText("PROCESSING...");
         
         saveTransaction();
-
-        javax.swing.Timer timer = new javax.swing.Timer(3000, e -> {
-            selectedModel.clear();
-            consoleSection.setText("CASH REGISTER");
-            statusLabel.setText("READY");
-            selectedPayment = "NONE";
+        statusLabel.setText("DONE!");
+        transactionComplete = true;
+        
+        javax.swing.Timer timer = new javax.swing.Timer(2000, e -> {
+            statusLabel.setText("PRESS RECEIPT OR CLEAR");
         });
         timer.setRepeats(false);
         timer.start();
+        
     }
     
     //save transaction to records
