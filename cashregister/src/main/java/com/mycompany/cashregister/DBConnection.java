@@ -18,7 +18,7 @@ public class DBConnection {
  
     private static final String URL = "jdbc:mysql://localhost:3306/cashregister";
     private static final String USER = "root";
-    private static final String PASSWORD = "Admin123_"; 
+    private static final String PASSWORD = ""; 
 
     public static Connection getConnection() {
         Connection connection = null;

@@ -1,10 +1,13 @@
-CREATE TABLE products (
+CREATE DATABASE IF NOT EXISTS cashregister;
+USE cashregister;
+
+CREATE TABLE IF NOT EXISTS products (
     product_id INT AUTO_INCREMENT PRIMARY KEY,
     product_name VARCHAR(100) NOT NULL,
     unit_price DECIMAL(10, 2) NOT NULL
 );
 
-CREATE TABLE transactions (
+CREATE TABLE IF NOT EXISTS transactions (
     transaction_id INT AUTO_INCREMENT PRIMARY KEY,
     product_id INT, 
     quantity INT NOT NULL,
@@ -14,7 +17,7 @@ CREATE TABLE transactions (
     FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
 
-INSERT INTO products (product_name, unit_price) VALUES
+INSERT IGNORE INTO products (product_name, unit_price) VALUES
 ('Soda', 29.50),
 ('Chips', 34.25),
 ('Burger', 50.00),
@@ -25,3 +28,6 @@ INSERT INTO products (product_name, unit_price) VALUES
 ('Hotdog', 50.00),
 ('Fries', 45.00),
 ('Yumburger', 60.00);
+
+ALTER TABLE transactions
+ADD COLUMN IF NOT EXISTS payment_method ENUM('cash', 'card') NOT NULL DEFAULT 'cash';

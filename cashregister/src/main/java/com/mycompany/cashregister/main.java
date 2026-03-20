@@ -51,10 +51,10 @@ public class main extends javax.swing.JFrame {
         setupApp();
         // test if connector successfully loads
          if (DBConnection.getConnection() != null) {
-        System.out.println("Database Connected Successfully!");
-    } else {
-        System.out.println("Database Connection Failed!");
-    }
+            System.out.println("Database Connected Successfully!");
+        } else {
+            System.out.println("Database Connection Failed!");
+        }
     }
 
     /**
@@ -75,7 +75,6 @@ public class main extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Cash Register");
         setLocationByPlatform(true);
-        setPreferredSize(new java.awt.Dimension(1000, 600));
         setResizable(false);
 
         jPanel1.setBackground(new java.awt.Color(20, 18, 33));
@@ -130,7 +129,7 @@ public class main extends javax.swing.JFrame {
                     .addComponent(inventoryProducts, javax.swing.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
                     .addComponent(selectedProducts)
                     .addComponent(rightContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(129, Short.MAX_VALUE))
+                .addContainerGap(130, Short.MAX_VALUE))
         );
 
         consoleSection.getAccessibleContext().setAccessibleName("console");
@@ -361,6 +360,11 @@ public class main extends javax.swing.JFrame {
         buttonPanel.add(clearBtn);
         buttonPanel.add(javax.swing.Box.createVerticalStrut(8));
         buttonPanel.add(exitBtn);
+        
+        // for receipt button
+        receiptBtn.addActionListener(e -> {
+           new ReceiptFrame(selectedModel, currentSubtotal, VAT_RATE).setVisible(true);
+        });
         
         // logic for clear button
         clearBtn.addActionListener(e -> {
