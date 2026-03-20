@@ -17,7 +17,9 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 
@@ -366,6 +368,11 @@ public class main extends javax.swing.JFrame {
            new ReceiptFrame(selectedModel, currentSubtotal, VAT_RATE).setVisible(true);
         });
         
+        // for records button
+        recordsBtn.addActionListener(e -> {
+            new RecordsFrame().setVisible(true);
+        });
+        
         // logic for clear button
         clearBtn.addActionListener(e -> {
             selectedModel.clear();
@@ -435,6 +442,8 @@ public class main extends javax.swing.JFrame {
         }
 
         statusLabel.setText("PROCESSING...");
+        
+        saveTransaction();
 
         javax.swing.Timer timer = new javax.swing.Timer(3000, e -> {
             selectedModel.clear();
@@ -444,6 +453,43 @@ public class main extends javax.swing.JFrame {
         });
         timer.setRepeats(false);
         timer.start();
+    }
+    
+    //save transaction to records
+    private void saveTransaction() {
+        String insertTransaction = "INSERT INTO transactions (total, payment_method) VALUES (?,?)";
+        String insertItem = "INSERT INTO transaction_items (transaction_id, product_id, quantity, subtotal) VALUES (?,?,?,?)";
+        
+        try (Connection conn = DBConnection.getConnection()){
+            //save overall transaction
+            PreparedStatement txnStmt = conn.prepareStatement(insertTransaction, Statement.RETURN_GENERATED_KEYS);
+            double totalDue = currentSubtotal * (1 + VAT_RATE);
+            txnStmt.setDouble(1, totalDue);
+            txnStmt.setString(2, selectedPayment);
+            txnStmt.executeUpdate();
+            
+            //get transaction_id
+            ResultSet keys = txnStmt.getGeneratedKeys();
+            int transactionId = 0;
+            if (keys.next()) {
+                transactionId= keys.getInt(1);
+            }
+            
+            //save item under that transaction_id
+            PreparedStatement itemStmt = conn.prepareStatement(insertItem);
+            for (int i=0; i<selectedModel.size(); i++) {
+                Product p = selectedModel.getElementAt(i);
+                itemStmt.setInt(1, transactionId);
+                itemStmt.setInt(2, p.getId());
+                itemStmt.setInt(3, p.getQuantity());
+                itemStmt.setDouble(4, p.getPrice() * p.getQuantity());
+                itemStmt.addBatch();
+            }
+            itemStmt.executeBatch();
+            System.out.println("Transaction saved to ID " + transactionId);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
 

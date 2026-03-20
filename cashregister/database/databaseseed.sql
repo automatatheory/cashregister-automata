@@ -7,15 +7,28 @@ CREATE TABLE IF NOT EXISTS products (
     unit_price DECIMAL(10, 2) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS transactions (
+DROP TABLE IF EXISTS transaction_items;
+DROP TABLE IF EXISTS transactions;
+
+-- one row for the transaction itself
+CREATE TABLE IF NOT EXISTS transactions(
     transaction_id INT AUTO_INCREMENT PRIMARY KEY,
-    product_id INT, 
+    total DECIMAL(10, 2) NOT NULL,
+    payment_method ENUM('cash', 'card') NOT NULL DEFAULT 'cash',
+    transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+
+-- one row per item in transaction
+CREATE TABLE IF NOT EXISTS transaction_items (
+    item_id INT AUTO_INCREMENT PRIMARY KEY,
+    transaction_id INT NOT NULL,
+    product_id INT NOT NULL,
     quantity INT NOT NULL,
     subtotal DECIMAL(10, 2) NOT NULL,
-    transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
+    
+    FOREIGN KEY (transaction_id) REFERENCES transactions(transaction_id),
     FOREIGN KEY (product_id) REFERENCES products(product_id)
-);
+)
 
 INSERT IGNORE INTO products (product_name, unit_price) VALUES
 ('Soda', 29.50),
