@@ -14,7 +14,7 @@ A lightweight desktop Point-of-Sale (POS) application built with Java Swing, pro
 - JDBC
 - MySQL
 
-## Other Tools
+### Other Tools
 - Maven
 
 ## Installation
